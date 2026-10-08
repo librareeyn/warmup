@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passport Quest – ภารกิจนักเดินทางมารยาทข้ามวัฒนธรรม</title>
+<style>
+:root{--wood:#1f120c;--felt:#0e3b3a;--brass:#d4a64a;--brass2:#8a6320;--parch:#f4e4bc;--lac:#a62b2b;--navy:#1d2f5c;--jade:#1c7a5c;--ink:#2b1a10;
+--serif:Georgia,"Noto Serif Thai","Sarabun",serif;--sans:"Noto Sans Thai","Sarabun","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;font-family:var(--sans);color:var(--parch);padding:14px;
+background:radial-gradient(ellipse at 50% 30%,#14524f 0,var(--felt) 45%,#07201f 100%) fixed}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.hidden{display:none!important}
+.btn{background:linear-gradient(#e8c26a,var(--brass));color:var(--ink);font-weight:800;font-size:19px;padding:13px 30px;border-radius:12px;border:2px solid var(--brass2);box-shadow:0 5px 0 var(--brass2),0 10px 18px #0006;transition:transform .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--brass2)}
+.btn:disabled{opacity:.6;cursor:default}
+#wrap{max-width:1100px;margin:0 auto}
+.hud .mini{display:grid;place-items:center;padding:6px 9px}.hud{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo{font-family:var(--serif);font-size:clamp(22px,3.4vw,34px);font-weight:700;color:var(--brass);text-shadow:0 2px 0 #000a;letter-spacing:.5px}
+.slots{display:flex;gap:6px}
+.slot{color:#f8ecc9;width:38px;height:38px;border-radius:50%;border:3px dashed #d4a64a88;display:grid;place-items:center;font-size:18px;background:#0003}
+.slot.ok{border:3px solid var(--brass);background:var(--jade);animation:stamp .4s}
+.slot.no{border:3px solid #c66;background:#6b2020}
+@keyframes stamp{0%{transform:scale(2) rotate(-25deg);opacity:0}100%{transform:none;opacity:1}}
+.coins{font-family:var(--serif);font-size:22px;font-weight:700;background:#0005;border:2px solid var(--brass);border-radius:30px;padding:4px 16px}
+.mini{background:#0004;border:2px solid #d4a64a66;border-radius:10px;padding:5px 10px;font-size:14px}
+/* map */
+.board{width:min(100%,calc((100vh - 150px)*1.8));margin:0 auto;border:10px solid;border-image:linear-gradient(135deg,#f0cf85,#8a6320 40%,#f0cf85 60%,#8a6320) 1;box-shadow:0 20px 40px #000a,inset 0 0 40px #000a;background:var(--parch);line-height:0}
+#map,.scene svg{width:100%;height:auto;display:block}
+#pawn{transition:transform .22s ease-in-out}
+.bar{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+.bar p{font-family:var(--serif);font-size:19px}
+/* overlay */
+#ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:12px;z-index:5;overflow:auto}
+.card{width:min(680px,100%);background:linear-gradient(#f8ecc9,var(--parch));color:var(--ink);border-radius:18px;border:6px double var(--brass2);box-shadow:0 20px 60px #000;padding:16px 18px 18px;text-align:center;animation:rise .35s}
+@keyframes rise{from{transform:translateY(30px) scale(.96);opacity:0}}
+.rib{display:inline-block;background:var(--lac);color:#fff;font-family:var(--serif);font-weight:700;padding:4px 22px;border-radius:4px;margin-bottom:10px;box-shadow:0 3px 0 #5d1414}
+.scene{width:fit-content;max-width:100%;margin:0 auto;border-radius:12px;overflow:hidden;border:3px solid var(--brass2);line-height:0;max-height:34vh}
+.scene svg{height:min(30vh,210px);width:auto;max-width:100%}
+h2{font-family:var(--serif);font-size:clamp(18px,2.8vw,24px);margin:12px 0 8px;line-height:1.35}
+.tm{height:8px;background:#0002;border-radius:6px;overflow:hidden;margin-bottom:12px}
+.tm i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--lac),var(--brass));transform-origin:left}
+.opts{display:grid;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;color:#fff;font-weight:700;font-size:clamp(15px,2.2vw,19px);padding:11px 14px;border-radius:12px;box-shadow:0 4px 0 #0005;transition:transform .12s}
+.opt:hover:not(:disabled){transform:translateX(5px)}
+.opt:disabled{cursor:default}
+.opt b{flex:none;width:40px;height:40px;border-radius:50%;background:#fff3;border:2px solid #fff8;display:grid;place-items:center;font-family:var(--serif);font-size:22px}
+.o0{background:var(--lac)}.o1{background:var(--navy)}.o2{background:var(--jade)}
+.opt.right{outline:5px solid var(--brass);animation:pop .5s}
+.opt.dim{opacity:.35}
+@keyframes pop{50%{transform:scale(1.04)}}
+.fb{margin-top:12px;display:grid;gap:10px;justify-items:center}
+.fb .ex{background:#0001;border-radius:10px;padding:10px 14px;line-height:1.55;font-size:16px}
+.fb strong{font-family:var(--serif);font-size:24px}
+.die svg{width:84px;height:84px}
+.die.r{animation:sh .14s infinite}
+@keyframes sh{25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+.rank svg{width:104px;height:104px}
+.conf{position:fixed;top:-40px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards;pointer-events:none;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.ic{flex:none}.logo,.coins,.bar p,.fb strong{display:flex;align-items:center;gap:8px}.fb strong{justify-content:center}
+.bob{animation:bob 1.4s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-4px)}}
+.stamps{display:flex;justify-content:center;gap:10px;margin:10px 0 12px;flex-wrap:wrap}
+.stp{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--jade);color:#f8ecc9;border:3px solid var(--brass2);box-shadow:inset 0 0 0 3px #f8ecc955;animation:stamp .5s backwards}
+.stp:nth-child(odd){transform:rotate(-7deg)}.stp:nth-child(even){transform:rotate(6deg)}
+.stp:nth-child(2){animation-delay:.15s}.stp:nth-child(3){animation-delay:.3s}.stp:nth-child(4){animation-delay:.45s}.stp:nth-child(5){animation-delay:.6s}
+.rec{list-style:none;padding:0;text-align:left;margin:10px 0 14px}
+.rec li{display:flex;align-items:center;gap:12px;padding:7px 4px;border-bottom:1px dashed #8a632055;font-size:16px;line-height:1.45}
+.rec li svg{color:var(--brass2)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.coins{position:relative;z-index:6}
+.scene svg.ph{animation:kb 16s ease-in-out infinite alternate}@keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.15) translate(-1.5%,-1%)}}
+.scene{animation:iris .9s cubic-bezier(.2,.8,.2,1)}@keyframes iris{from{clip-path:circle(0% at 50% 50%);filter:brightness(3) blur(6px)}to{clip-path:circle(80% at 50% 50%)}}
+.opt{animation:sl .45s backwards}.opt:nth-child(1){animation-delay:.35s}.opt:nth-child(2){animation-delay:.5s}.opt:nth-child(3){animation-delay:.65s}@keyframes sl{from{transform:translateX(-40px) rotate(-2deg);opacity:0}}
+.hot{animation:hotc .5s infinite}@keyframes hotc{50%{box-shadow:0 0 0 6px #e5332a,0 20px 60px #000}}.hot .tm i{filter:brightness(1.4)}
+.gain{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--jade);display:flex;align-items:center;gap:6px;animation:pop .6s}
+.cp{position:fixed;left:0;top:0;width:16px;height:16px;margin:-8px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3b0,#d4a64a 60%,#8a6320);z-index:11;pointer-events:none}
+.slam{position:fixed;left:50%;top:50%;width:200px;height:200px;margin:-100px;border-radius:50%;border:8px double var(--brass);background:var(--jade);color:#f8ecc9;display:grid;place-items:center;z-index:12;pointer-events:none;box-shadow:0 0 0 10px #f8ecc933,0 0 60px #d4a64a;animation:slam .9s both}
+@keyframes slam{0%{transform:scale(4) rotate(-30deg);opacity:0}30%{transform:scale(1) rotate(-8deg);opacity:1}40%{transform:scale(1.1) rotate(-8deg)}100%{transform:scale(1) rotate(-8deg);opacity:0}}
+.spk{fill:#fff3b0;pointer-events:none;transform-box:fill-box;transform-origin:center;animation:spk .9s forwards}@keyframes spk{to{transform:scale(3.5);opacity:0}}
+.bar p .ic{animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<radialGradient id="vg" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
+<filter id="gr"><feTurbulence baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 -.04"/></filter>
+<filter id="wd" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".012 .3" numOctaves="3" seed="8"/><feColorMatrix values="0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35"/></filter>
+<filter id="b2"><feGaussianBlur stdDeviation="1.6"/></filter><filter id="b3"><feGaussianBlur stdDeviation="3"/></filter><filter id="b4"><feGaussianBlur stdDeviation="5"/></filter>
+<style>symbol{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}</style>
+<symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="i-temple" viewBox="0 0 24 24"><path d="M12 2v3"/><path d="M12 5l3 4H9z"/><path d="M9 9h6l2 5H7z"/><path d="M6 14h12l1 6H5z"/><path d="M3 21h18"/></symbol>
+<symbol id="i-wai" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.6"/><path d="M7.5 21.5l1.2-9.5L12 9.5l3.3 2.5 1.2 9.5"/><path d="M9.8 13.2l2.2 3.6 2.2-3.6"/></symbol>
+<symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 7c0-2 2-2 2-4M14 7c0-2 2-2 2-4"/><path d="M8 21h8"/></symbol>
+<symbol id="i-dine" viewBox="0 0 24 24"><path d="M6 3v7a2 2 0 0 0 4 0V3M8 3v18"/><path d="M17 21V3c-2.5 1-4 4-4 8h4"/></symbol>
+<symbol id="i-plane" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v6a4 4 0 0 1-8 0z"/><path d="M8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3"/><path d="M12 14v4M8 21h8M10 18h4"/></symbol>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M16 8l-2 6-6 2 2-6z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-cross" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 0 1 0 6"/></symbol>
+<symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/></symbol>
+<symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol></defs></svg>
+<div id="wrap">
+  <div class="hud">
+    <div class="logo"><svg class="ic" width="32" height="32"><use href="#i-compass"/></svg>Passport Quest</div>
+    <div class="slots" id="slots"></div>
+    <div class="coins" id="cn"><svg class="ic" width="24" height="24"><use href="#i-coin"/></svg><span id="cv">0</span></div>
+        <div style="display:flex;gap:8px"><button class="mini" id="mus" aria-label="เพลงประกอบ" title="เพลง"></button><button class="mini" id="mute" aria-label="เปิดปิดเสียง"></button></div>
+  </div>
+  <div class="board"><svg id="map" viewBox="0 0 800 440" role="img" aria-label="แผนที่การเดินทาง"></svg></div>
+  <div class="bar" id="bar"></div>
+</div>
+<div id="ov"></div>
+
+<script>
+/* ===== แก้/เพิ่มโจทย์ที่นี่ (sc = หมายเลขภาพประกอบ 0-4, c = ข้อที่ถูก เริ่มที่ 0) ===== */
+const Q=[
+{n:"บ้านไทย",tk:"ถอดรองเท้าก่อนเข้าบ้าน เพื่อให้เกียรติเจ้าของบ้าน",ic:"house",sc:0,q:"Your foreign friend visits a Thai house. Which advice is more appropriate?",
+ a:["They should wear shoes inside.","They should take off their shoes.","They shouldn’t greet the family."],c:1,
+ ex:"ถอดรองเท้าก่อนเข้าบ้านคนไทย เป็นการให้เกียรติเจ้าของบ้านและรักษาความสะอาด"},
+{n:"วัดไทย",tk:"แต่งกายสุภาพ ปิดไหล่และเข่า",ic:"temple",sc:1,q:"Your foreign friend visits a Thai temple. What should they do?",
+ a:["They should wear respectful clothes.","They should wear shorts.","They shouldn’t take off their hat."],c:0,
+ ex:"ไปวัดต้องแต่งกายสุภาพ ปิดไหล่และเข่า และควรถอดหมวกเมื่อเข้าไปในโบสถ์"},
+{n:"พบกันครั้งแรก",tk:"ทักทายอย่างสุภาพ เช่น การไหว้",ic:"wai",sc:2,q:"Your foreign friend meets a Thai person for the first time. What should they do?",
+ a:["They should hug everyone immediately.","They should ignore the person.","They should greet them politely, such as with a wai when appropriate."],c:2,
+ ex:"ทักทายอย่างสุภาพ เช่น การไหว้ เป็นการแสดงความเคารพที่คนไทยประทับใจ"},
+{n:"มื้ออาหารไทย",tk:"กินแบบแบ่งกันหลายจาน",ic:"bowl",sc:3,q:"Your foreign friend has a meal with a Thai family. Which advice is more appropriate?",
+ a:["They should share dishes with everyone.","They should only eat the food on their own plate.","They shouldn’t share food with others."],c:0,
+ ex:"อาหารไทยนิยมกินแบบแบ่งกันหลายจาน เพื่อแสดงความเป็นกันเองและน้ำใจ"},
+{n:"ร้านอาหารอเมริกัน",tk:"ให้ทิปพนักงานเสิร์ฟ ประมาณ 15–20%",ic:"dine",sc:4,q:"Your Thai friend goes to an American restaurant. What should they do?",
+ a:["They should leave without paying.","They shouldn’t say thank you.","They should tip the server."],c:2,
+ ex:"ในอเมริกาควรให้ทิป (ประมาณ 15–20%) เพราะเป็นรายได้สำคัญของพนักงานเสิร์ฟ"}
+];
+
+/* ===== ภาพประกอบ (SVG สไตล์ภาพถ่าย: แสง เงา เกรน) ===== */
+const I=(n,z=22)=>`<svg class="ic" width="${z}" height="${z}"><use href="#i-${n}"/></svg>`;
+const V=x=>`<svg class="ph" viewBox="0 0 320 190"><rect width="320" height="190" fill="#000"/>${x}<rect width="320" height="190" fill="url(#vg)"/><rect width="320" height="190" filter="url(#gr)"/></svg>`;
+const G=(id,a,c,h)=>`<linearGradient id="${id}" x1="0" y1="0" x2="${h?1:0}" y2="${h?0:1}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${c}"/></linearGradient>`;
+const R=(id,a,c)=>`<radialGradient id="${id}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${c}"/></radialGradient>`;
+const el=(x,y,rx,ry,f,e="")=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" ${e}/>`;
+const lines=(a,y1,y2,s,o)=>a.map(x=>`<path d="M${x} ${y1}V${y2}" stroke="${s}" stroke-opacity="${o}"/>`).join("");
+const frang=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})" filter="url(#b2)">${[0,72,144,216,288].map(r=>`<ellipse cy="-9" rx="5" ry="10" fill="#fffaf0" transform="rotate(${r})"/>`).join("")}<circle r="3" fill="#f6c33a"/></g>`;
+const ppl=(sh,hr,sk,bun)=>`<path d="M26 190Q30 134 82 122Q114 118 132 148L146 190z" fill="${sh}"/><rect x="88" y="98" width="18" height="30" fill="${sk}"/>${el(98,74,24,30,sk)}<path d="M121 72q9 4 4 11-3 3-8 2z" fill="${sk}"/><path d="M72 78Q64 38 100 38Q128 40 122 66Q110 50 96 56Q84 62 82 92Q72 92 72 78z" fill="${hr}"/>${bun?el(74,48,12,12,hr):""}<circle cx="112" cy="70" r="1.8" fill="#1a1008"/><path d="M120 140Q132 152 142 146L136 130z" fill="${sh}"/>${el(143,126,7,23,sk,'transform="rotate(32 143 126)"')}<path d="M137 142q4-12 12-22" stroke="#0005" stroke-width="1.4" fill="none"/>`;
+const bill=(x,y,r)=>`<g transform="rotate(${r} ${x+27} ${y+13})"><rect x="${x}" y="${y}" width="54" height="26" rx="2" fill="#86b48a" stroke="#3f6b44" stroke-width="1.4"/><rect x="${x+4}" y="${y+4}" width="46" height="18" fill="none" stroke="#3f6b44" stroke-width=".8"/>${el(x+27,y+13,7,8,"#5f9264")}<circle cx="${x+9}" cy="${y+13}" r="3" fill="#3f6b44"/><circle cx="${x+45}" cy="${y+13}" r="3" fill="#3f6b44"/></g>`;
+const SC=[
+V(`<defs>${G("s0","#2c4d73","#f3b36a")+G("rf","#a14a2a","#4d2014")+G("wl","#b07c46","#6d4526",1)+G("dk","#120c08","#3a2a1a")+R("lt","#ffe3a0","#ffb34a00")}</defs>
+<rect width="320" height="190" fill="url(#s0)"/><circle cx="250" cy="100" r="50" fill="url(#lt)"/>
+<g filter="url(#b3)"><path d="M0 118q30-36 70-14t80-16 70 12 100-14V190H0z" fill="#35502f"/><path d="M0 140q60-22 120-8t200-10V190H0z" fill="#2c4426"/></g>
+<rect y="152" width="320" height="38" fill="#3a4a26"/><path d="M104 190l44-38h30l42 38z" fill="#b8956a" opacity=".8"/>
+<rect x="92" y="114" width="142" height="42" fill="url(#dk)" opacity=".85"/>${[96,132,190,226].map(x=>`<rect x="${x}" y="112" width="7" height="46" fill="#5a3a1f"/>`).join("")}
+<path d="M148 158l22-42h16l-20 42z" fill="#a0703a"/><path d="M153 148h20M158 138h20M163 128h20" stroke="#5a3a1f" stroke-width="1.2"/>
+<polygon points="70,81 165,30 260,81" fill="#7a4a26"/><rect x="84" y="106" width="158" height="9" fill="#7a4e28"/>
+<path d="M94 106L101 62H229L236 106z" fill="url(#wl)"/><g stroke-width="1">${lines([112,124,136,196,208,220],62,106,"#3a2010",".55")}</g>
+<rect x="148" y="70" width="34" height="36" fill="#ffd27c"/><circle cx="165" cy="90" r="42" fill="url(#lt)" opacity=".65"/>
+<rect x="107" y="74" width="24" height="20" fill="#ffcf70"/><rect x="199" y="74" width="24" height="20" fill="#ffcf70"/><path d="M119 74v20M107 84h24M211 74v20M199 84h24" stroke="#5a3a1f" stroke-width="2"/>
+<path d="M56 74L165 16l109 58-8 7-101-52-101 52z" fill="url(#rf)"/><path d="M56 74L165 16l109 58" fill="none" stroke="#e0aa48" stroke-width="2.5"/><path d="M165 16q-9-10-3-20M165 16q9-10 3-20" fill="none" stroke="#e0aa48" stroke-width="2.4" stroke-linecap="round"/>
+${el(136,160,7,3,"#c0392b")+el(149,162,7,3,"#262626")+el(180,104,5,2,"#c0392b")+el(190,104,5,2,"#c0392b")}
+<g filter="url(#b3)"><path d="M0 190Q10 120 50 100Q40 150 70 190z" fill="#1d4a2a"/><path d="M320 190Q312 130 280 110Q290 150 262 190z" fill="#235a30"/></g>${frang(40,172,.9)+frang(292,176,.7)}`),
+V(`<defs>${G("s1","#4a98d2","#fde3b4")+G("gd","#fff0a0","#a8761a",1)+G("rt","#ec6d2c","#a03a14")+G("wh","#fbf4e2","#d8cdb4")}</defs>
+<rect width="320" height="190" fill="url(#s1)"/><g filter="url(#b3)" opacity=".85">${el(60,34,40,9,"#fff")+el(250,24,46,10,"#fff")+el(280,44,26,7,"#fff")}</g>
+<path d="M0 134q50-20 110-6t120-8 90 6V190H0z" fill="#4c7a3c" opacity=".7" filter="url(#b2)"/>
+<path d="M80 150Q54 150 56 124 60 100 80 84 100 100 104 124 106 150 80 150zM77 84L80 30 83 84z" fill="url(#gd)"/><path d="M62 118q18 8 36 0M60 130q20 9 40 0" stroke="#7a5212" stroke-width="1.2" fill="none"/><path d="M80 30V16" stroke="#e9c04a" stroke-width="2"/>
+<rect x="120" y="104" width="170" height="48" fill="url(#wh)"/>${[134,170,232,268].map(x=>`<rect x="${x}" y="104" width="7" height="48" fill="#e9c04a"/>`).join("")}
+<rect x="186" y="112" width="40" height="40" fill="#7a2418"/><path d="M206 112v40" stroke="#e9c04a" stroke-width="2"/><rect x="146" y="116" width="18" height="24" fill="#5a1c12" stroke="#e9c04a" stroke-width="2"/><rect x="246" y="116" width="18" height="24" fill="#5a1c12" stroke="#e9c04a" stroke-width="2"/>
+<g stroke="#e9c04a" stroke-width="2" fill="url(#rt)"><path d="M104 106Q150 104 160 86H250Q260 104 306 106z"/><path d="M130 88Q165 86 174 68H236Q245 86 280 88z"/><path d="M156 70Q184 68 190 52H220Q226 68 254 70z"/></g>
+<path d="M205 52v-14M104 106q-6-8-2-14M306 106q6-8 2-14M130 88q-5-8-1-13M280 88q5-8 1-13" stroke="#e9c04a" stroke-width="2.4" fill="none" stroke-linecap="round"/><rect x="104" y="106" width="202" height="4" fill="#1f8a5a"/>
+<rect y="152" width="320" height="38" fill="#cfc2a2"/><path d="M0 164h320M0 178h320" stroke="#a89a76" stroke-width="1.5"/>
+<g filter="url(#b2)"><path d="M32 190Q32 124 54 116Q62 112 70 116Q92 124 92 190z" fill="#e8830c"/><path d="M44 190Q46 140 58 124" stroke="#a8520a" stroke-width="3" fill="none"/><circle cx="62" cy="106" r="9" fill="#b8805a"/></g>${frang(290,170,1)+frang(268,182,.7)}`),
+V(`<defs>${R("bg2","#33493a","#0e1a14")}</defs><rect width="320" height="190" fill="url(#bg2)"/>
+<g filter="url(#b4)">${[[40,40,22,"#f2b648"],[110,22,16,"#ff8a5a"],[210,30,24,"#f6d77a"],[280,56,18,"#9ed39a"],[250,120,20,"#f2b648"],[20,110,18,"#ffc27a"]].map(a=>el(a[0],a[1],a[2],a[2],a[3],'opacity=".55"')).join("")}</g>
+${ppl("#f4efe4","#17100c","#c98f62",1)}<g transform="translate(320 0) scale(-1 1)">${ppl("#3d5f8a","#6a4a2a","#f0c4a0",0)}</g>`),
+V(`<defs>${R("tb","#a86b36","#4e2a12")+R("ri","#fffdf5","#e6d9bb")+R("ty","#ee5a2c","#9e2410")+R("gc","#c6dd92","#6a9838")+R("fs","#efb855","#a4601a")+G("mt","#f4f4f4","#8a8f96",1)}</defs>
+<rect width="320" height="190" fill="url(#tb)"/><rect width="320" height="190" filter="url(#wd)"/>${el(160,98,152,74,"#3d7a38",'transform="rotate(-5 160 98)"')}<path d="M10 104Q160 86 312 94" stroke="#2c5e2a" stroke-width="2" fill="none"/>
+<g filter="url(#b2)" opacity=".6">${[[84,106,32],[164,94,38],[248,102,30]].map(a=>el(a[0]+4,a[1]+5,a[2],a[2],"#000")).join("")}</g>
+${el(80,100,32,32,"#f7f3ea")+el(80,100,26,26,"#e9e2d0")+el(80,97,20,15,"url(#ri)")}
+${el(162,88,38,38,"#f4efe4")+el(162,88,29,29,"url(#ty)")}<path d="M146 98l22-14" stroke="#d8e0a0" stroke-width="2.5" stroke-linecap="round"/>${el(152,82,6,4,"#e9dcc2")+el(170,98,6,4,"#e9dcc2")+el(158,100,2.5,2.5,"#c8200e")+el(172,80,2.5,2.5,"#c8200e")+el(150,92,3,2,"#3f8f3a")}<path d="M160 76q10-4 14 4t-6 8q-10 2-8-12z" fill="#f08a5a"/>
+${el(248,100,30,30,"#f4efe4")+el(248,100,25,25,"url(#gc)")}<path d="M236 100q12-10 24 0" stroke="#fff" stroke-opacity=".6" stroke-width="3" fill="none"/>${el(240,106,4,4,"#dfe8b8")+el(256,94,4,4,"#dfe8b8")+el(250,106,4,2.4,"#2e6a2a")}
+${el(200,34,42,19,"#f7f3ea")+el(200,34,34,14,"#e9e2d0")+el(200,34,28,10,"url(#fs)")+el(186,33,1.8,1.8,"#2a1a0a")}<path d="M244 40a10 10 0 0 1 14-2l-6 11z" fill="#b8d24a"/>
+${el(118,166,34,18,"#f7f3ea")}${[96,108,120].map(x=>el(x,164,6,4,"#cfe3a0")).join("")}${el(144,166,9,5,"#7a3a1a")}
+<g stroke="url(#mt)" stroke-width="3" stroke-linecap="round" fill="none"><path d="M30 150L36 76"/><path d="M290 150L284 82"/></g><path d="M32 76l-1-10M36 76v-11M40 76l1-10" stroke="#c8ccd2" stroke-width="1.6"/>${el(283,72,7,10,"#d8dce2")}
+<g filter="url(#b2)" opacity=".35"><path d="M150 52q-8-10 0-20t0-20M166 50q-8-10 0-20t0-20" stroke="#fff" stroke-width="4" fill="none"/></g>`),
+V(`<defs>${G("s4","#0f1a34","#2b1f3c")+G("tt","#e4ded0","#a8a190")+G("mt","#f4f4f4","#8a8f96")}</defs><rect width="320" height="114" fill="url(#s4)"/>
+<g filter="url(#b4)">${[[30,30,16,"#ff4a5a"],[84,50,12,"#ffd25a"],[150,24,18,"#5ab4ff"],[210,52,14,"#ff9a4a"],[270,28,20,"#ffd25a"],[300,70,14,"#ff4a5a"],[120,76,10,"#9aff9a"]].map(a=>el(a[0],a[1],a[2],a[2],a[3],'opacity=".7"')).join("")}</g>
+<g fill="none" stroke="#ff4a5a" stroke-width="3"><rect x="120" y="14" width="80" height="26" rx="13" filter="url(#b2)"/><rect x="120" y="14" width="80" height="26" rx="13" stroke="#ffd0d4" stroke-width="1.2"/></g>
+<rect y="108" width="320" height="6" fill="url(#mt)"/><rect y="114" width="320" height="76" fill="url(#tt)"/><path d="M0 130Q160 122 320 132" stroke="#fff" stroke-opacity=".5" stroke-width="6" fill="none"/>
+<g filter="url(#b2)" opacity=".5">${el(56,158,30,9,"#000")+el(188,180,60,8,"#000")}</g>
+${el(50,148,28,10,"#f6f3ec")}<path d="M33 134h34l-4 18q-13 6-26 0z" fill="#fff"/>${el(50,134,17,6,"#fff")+el(50,134,14,4.5,"#3a2010")}<path d="M67 138q10 0 6 8q-3 4-8 3" stroke="#fff" stroke-width="3" fill="none"/><g filter="url(#b2)" opacity=".4"><path d="M46 124q-6-8 0-14t0-10" stroke="#fff" stroke-width="3" fill="none"/></g>
+<rect x="100" y="128" width="116" height="54" rx="4" fill="#1b1b1e"/><path d="M104 131h108" stroke="#fff3"/><rect x="112" y="124" width="46" height="52" fill="#fbf8ee" transform="rotate(-3 135 150)"/>${[134,142,150,158].map(y=>`<path d="M118 ${y}h30" stroke="#9a968a" stroke-width="1.4"/>`).join("")}${bill(150,138,-8)+bill(160,148,6)}
+<rect x="262" y="118" width="16" height="40" rx="5" fill="#c0392b"/><rect x="266" y="108" width="8" height="12" fill="#f4f4f4"/><rect x="284" y="124" width="14" height="34" rx="5" fill="#e8b830"/>`)
+];
+
+/* ===== แผนที่ ===== */
+const AN=[[60,350],[180,130],[300,330],[430,120],[550,330],[660,130],[745,330]];
+const AIC=["plane","house","temple","wai","bowl","dine","trophy"];
+const N=[];AN.forEach((a,i)=>{N.push({x:a[0],y:a[1]});if(i<6){const b=AN[i+1];for(let j=1;j<3;j++)N.push({x:a[0]+(b[0]-a[0])*j/3,y:a[1]+(b[1]-a[1])*j/3})}});
+const SHAPES=["▲","◆","●"],FACES=["⚀","⚁","⚂","⚃","⚄","⚅"];
+let S,muted=false,timer;
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let ac;function beep(f=440,d=.12,t="sine"){if(muted)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=t;o.frequency.value=f;g.gain.value=.07;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+const tune=n=>n.forEach((f,i)=>setTimeout(()=>beep(f,.2,"triangle"),i*140));
+let musicOn=true,mt=null,mi=3,ms=0;
+const getAc=()=>{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();return ac};
+function nt(f,t,d,g=.05,ty="sine"){const a=getAc(),o=a.createOscillator(),v=a.createGain();o.type=ty;o.frequency.value=f;v.gain.setValueAtTime(.0001,t);v.gain.linearRampToValueAtTime(g,t+.012);v.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(v);v.connect(a.destination);o.start(t);o.stop(t+d+.05)}
+const SCL=[261.6,293.7,329.6,392,440,523.3,587.3,659.3,784];
+function startMusic(){if(mt||!musicOn)return;try{getAc()}catch(e){return}
+ mt=setInterval(()=>{if(!musicOn||document.hidden)return;const t=ac.currentTime+.05;
+  mi=Math.max(0,Math.min(8,mi+[-2,-1,-1,0,1,1,2][Math.random()*7|0]));
+  if(ms%2===0||Math.random()<.4)nt(SCL[mi],t,1.1,.045);
+  if(ms%8===0){nt(130.8,t,3,.05,"triangle");nt(196,t+.02,3,.03,"triangle")}
+  if(ms%8===4)nt(174.6,t,2.4,.04,"triangle");
+  if(ms%4===2)nt(SCL[mi]*2,t+.18,.5,.02);ms++},380)}
+const stopMusic=()=>{clearInterval(mt);mt=null};
+function thump(){if(muted)return;try{const a=getAc(),o=a.createOscillator(),v=a.createGain(),t=a.currentTime;o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(50,t+.18);v.gain.setValueAtTime(.25,t);v.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(v);v.connect(a.destination);o.start(t);o.stop(t+.25)}catch(e){}}
+const setMute=()=>{$("#mute").innerHTML=I(muted?"mute":"sound",22);$("#mus").innerHTML=I("music",22);$("#mus").style.opacity=musicOn?1:.45};
+$("#mute").onclick=()=>{muted=!muted;setMute()};
+$("#mus").onclick=()=>{musicOn=!musicOn;musicOn?startMusic():stopMusic();setMute()};
+
+const pp=i=>[N[i].x,N[i].y-(i%3?10:32)];
+function drawMap(){
+ const trail=N.map(n=>`${n.x},${n.y}`).join(" ");
+ let h=`<defs><radialGradient id="pg" cx=".5" cy=".5" r=".75"><stop offset="0" stop-color="#f8ecc9"/><stop offset="1" stop-color="#d9bd80"/></radialGradient></defs>
+ <rect width="800" height="440" fill="url(#pg)"/>
+ <g opacity=".5"><path d="M0 440V388l60-70 46 46 38-38 84 100v14z" fill="#c9a060"/><path d="M540 440v-30l60-68 46 50 40-42 114 90z" fill="#c9a060"/><g stroke="#8a6320" fill="none" stroke-width="2" stroke-linecap="round"><path d="M300 62q10-8 20 0t20 0t20 0M600 62q10-8 20 0t20 0t20 0M80 262q10-8 20 0t20 0M680 252q10-8 20 0t20 0M380 400q10-8 20 0t20 0t20 0"/><path d="M44 120v52" stroke="#5a4020" stroke-width="3"/></g><path d="M44 120c-6-16-22-20-34-14 10 0 20 4 26 14zM44 120c6-16 22-20 34-14-10 0-20 4-26 14zM44 120c-2-16-10-24-22-24 8 4 14 12 16 24zM44 120c2-16 10-24 22-24-8 4-14 12-16 24z" fill="#5a7d4a"/><g transform="translate(738 78)" stroke="#8a6320" fill="none" stroke-width="1.5"><circle r="28"/><path d="M0-36L7-7 36 0 7 7 0 36-7 7-36 0-7-7z" fill="#d4a64a" fill-opacity=".6"/></g></g>
+ <text x="400" y="30" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="#7a5a2a" font-style="italic">ประเทศไทย  →  สหรัฐอเมริกา</text>
+ <polyline points="${trail}" fill="none" stroke="#b58a45" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+ <polyline points="${trail}" fill="none" stroke="#f8ecc9" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>`;
+ N.forEach((n,i)=>{if(i%3)h+=`<circle cx="${n.x}" cy="${n.y}" r="9" fill="#f4e4bc" stroke="#8a6320" stroke-width="3"/>`});
+ AN.forEach((a,i)=>{
+  const r=S.res[i-1],fill=i===0||i===6?"#8a6320":r!==undefined?"#1c7a5c":"#1d2f5c";
+  h+=`<circle cx="${a[0]}" cy="${a[1]}" r="31" fill="${fill}" stroke="#d4a64a" stroke-width="6"/><circle cx="${a[0]}" cy="${a[1]}" r="25" fill="none" stroke="#fff5" stroke-width="1.5"/><use href="#i-${AIC[i]}" x="${a[0]-15}" y="${a[1]-15}" width="30" height="30" color="#f8ecc9"/>`;
+  if(r!==undefined)h+=`<circle cx="${a[0]+24}" cy="${a[1]-24}" r="12" fill="#2fbf71" stroke="#fff" stroke-width="2"/><use href="#i-check" x="${a[0]+16}" y="${a[1]-32}" width="16" height="16" color="#fff"/>`;
+});
+ const p=pp(S.pos);
+ h+=`<g id="pawn" style="transform:translate(${p[0]}px,${p[1]}px)"><ellipse cy="1" rx="10" ry="3.5" fill="#0006"/><g class="bob"><path d="M0 0C-14-14-17-22-17-29a17 17 0 0 1 34 0c0 7-3 15-17 29z" fill="#a62b2b" stroke="#3a2418" stroke-width="2.5" stroke-linejoin="round"/><circle cy="-29" r="10.5" fill="#f8ecc9" stroke="#3a2418" stroke-width="2"/><use href="#i-plane" x="-7" y="-36" width="14" height="14" color="#a62b2b"/></g></g>`;
+ $("#map").innerHTML=h;
+ $("#slots").innerHTML=Array.from({length:5},(_,i)=>`<div class="slot ${S.res[i]!==undefined?"ok":""}">${S.res[i]!==undefined?I(Q[i].ic,20):""}</div>`).join("");
+}
+function addCoins(n){const f=S.coins,el=$("#cv"),t0=performance.now();S.coins+=n;(function s(t){const p=Math.min(1,(t-t0)/700);el.textContent=Math.round(f+n*p);if(p<1)requestAnimationFrame(s)})(t0);$("#cn").animate([{transform:"scale(1)"},{transform:"scale(1.3)"},{transform:"scale(1)"}],{duration:420})}
+function burst(g){const c=$(".card").getBoundingClientRect(),h=$("#cn").getBoundingClientRect(),sx=c.left+c.width/2,sy=c.top+c.height*.55;for(let i=0;i<14;i++){const d=document.createElement("i");d.className="cp";document.body.append(d);const rx=(Math.random()-.5)*240,ry=-60-Math.random()*120;d.animate([{transform:`translate(${sx}px,${sy}px) scale(.4)`},{transform:`translate(${sx+rx}px,${sy+ry}px) scale(1)`,offset:.4},{transform:`translate(${h.left+h.width/2}px,${h.top+h.height/2}px) scale(.5)`}],{duration:1100,delay:i*40,easing:"ease-in-out",fill:"forwards"}).onfinish=()=>{d.remove();beep(1200+Math.random()*400,.05,"triangle")}}setTimeout(()=>addCoins(g),900)}
+async function slam(ic){const d=document.createElement("div");d.className="slam";d.innerHTML=I(ic,96);document.body.append(d);await sleep(300);thump();$("#wrap").animate([{transform:"translate(0)"},{transform:"translate(-8px,5px)"},{transform:"translate(7px,-5px)"},{transform:"translate(-3px,2px)"},{transform:"none"}],{duration:300});await sleep(600);d.remove()}
+function bar(){
+ if(S.k>=5){$("#bar").innerHTML="";return}
+ $("#bar").innerHTML=`<p>${I("compass",28)} ด่านที่ ${S.k+1}</p><button class="btn" id="go">ออกเดินทาง</button>`;
+ $("#go").onclick=async()=>{$("#go").disabled=true;await walk((S.k+1)*3);await sleep(300);showQ()};
+}
+async function walk(to){const pw=()=>$("#pawn");while(S.pos!==to){S.pos+=S.pos<to?1:-1;$("#map").insertAdjacentHTML("beforeend",`<circle class="spk" cx="${N[S.pos].x}" cy="${N[S.pos].y}" r="5"/>`);const p=pp(S.pos);pw().style.transform=`translate(${p[0]}px,${p[1]}px)`;beep(480+S.pos*14,.07,"triangle");await sleep(240)}}
+
+/* ===== overlay ===== */
+const ov=h=>{$("#ov").innerHTML=h;$("#ov").classList.remove("hidden")};
+const closeOv=()=>{clearInterval(timer);$("#ov").classList.add("hidden")};
+
+function intro(){
+ S={k:0,pos:0,res:[],coins:0,st:0,locked:true};$("#cv").textContent=0;drawMap();$("#bar").innerHTML="";
+ ov(`<div class="card"><div class="rib">กิจกรรมขั้นนำ</div>
+ <div style="color:#8a6320">${I("compass",52)}</div><h2 style="font-size:clamp(26px,5vw,40px);margin:4px 0">Passport Quest</h2>
+ <p style="font-size:18px;line-height:1.6;margin-bottom:10px">ทั้งห้องคือนักเดินทางหนึ่งเดียว<br>ช่วยกันพาเพื่อนต่างชาติ (และเพื่อนไทย) ผ่าน 5 ด่าน<br>เก็บตราประทับในพาสปอร์ตให้ครบ!</p>
+ <div class="ex" style="background:#0001;border-radius:10px;padding:10px 14px;text-align:left;line-height:1.7;margin-bottom:14px">
+ <b>1.</b> อ่านโจทย์ แล้วทุกคนชูนิ้ว <b>1 · 2 · 3</b> พร้อมกัน<br>
+ <b>2.</b> ครูกดคำตอบที่ห้องเลือกมากที่สุด (หรือกดปุ่มคีย์บอร์ด 1 2 3)<br>
+ <b>3.</b> ดูเฉลยและประทับตราลงพาสปอร์ต ครบ 5 ด่านก็พร้อมเข้าสู่บทเรียน</div>
+ <button class="btn" id="st">เริ่มภารกิจ</button></div>`);
+ $("#st").onclick=()=>{tune([523,659,784]);startMusic();closeOv();bar()};
+}
+
+function showQ(){
+ const q=Q[S.k];S.opts=shuffle(q.a.map(t=>({t,ok:t===q.a[q.c]})));S.locked=false;S.t0=Date.now();
+ ov(`<div class="card"><div class="rib">ด่านที่ ${S.k+1} จาก 5</div>
+ <div class="scene">${SC[q.sc]}</div><h2>${q.q}</h2><div class="tm"><i id="tb"></i></div>
+ <div class="opts">${S.opts.map((o,i)=>`<button class="opt o${i}" data-i="${i}"><b>${i+1}</b>${o.t}</button>`).join("")}</div><div class="fb" id="fb"></div></div>`);
+ document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+ let t=20;const tb=$("#tb");tb.style.transition="transform 20s linear";tb.getBoundingClientRect();requestAnimationFrame(()=>tb.style.transform="scaleX(0)");
+ timer=setInterval(()=>{t--;if(t<=5&&t>0){beep(700,.08,"square");thump();$(".card")?.classList.add("hot")}if(t<=0){clearInterval(timer);beep(220,.4,"sawtooth")}},1000);
+}
+function answer(i){
+ if(S.locked)return;S.locked=true;clearInterval(timer);
+ const ok=S.opts[i].ok;S.res[S.k]=ok?1:0;
+ document.querySelectorAll(".opt").forEach((b,j)=>{b.disabled=true;b.classList.add(S.opts[j].ok?"right":"dim")});
+ ok?tune([659,784,988]):tune([330,262]);
+ let g=0;if(ok){S.st++;g=100+Math.max(0,20-(Date.now()-S.t0)/1000|0)*5+(S.st-1)*25;burst(g)}else{S.st=0;$(".card").animate([{transform:"translateX(0)"},{transform:"translateX(-12px)"},{transform:"translateX(10px)"},{transform:"translateX(-6px)"},{transform:"none"}],{duration:380})}
+ $("#fb").innerHTML=`<strong>${ok?I("check",26)+" ถูกต้อง!":"ยังไม่ใช่ มาดูเฉลยกัน"}</strong>${ok?`<div class="gain">${I("coin",24)} +${g} เหรียญ${S.st>1?` · คอมโบ ×${S.st}`:""}</div>`:""}<div class="ex">${Q[S.k].ex}</div><button class="btn" id="nx">ประทับตราด่านนี้</button>`;
+ $("#nx").focus();$("#nx").onclick=finishQ;
+}
+async function finishQ(){
+ closeOv();await slam(Q[S.k].ic);S.k++;drawMap();if(S.k>=5)$("#bar").innerHTML="";
+ if(S.k>=5){await sleep(900);await walk(18);await sleep(300);end()}else bar();
+}
+function end(){
+ tune([523,659,784,1046,1318]);
+ ov(`<div class="card"><div class="rib">ภารกิจสำเร็จ</div><h2 style="font-size:clamp(24px,4vw,32px);margin:6px 0 0">พาสปอร์ตครบทั้ง 5 ด่านแล้ว</h2>
+ <div class="stamps">${Q.map(q=>`<div class="stp">${I(q.ic,30)}</div>`).join("")}</div>
+ <p style="font-size:18px;font-weight:700">ทั้งห้องตอบครบทุกคำถาม พร้อมเข้าสู่บทเรียนแล้ว</p><div class="gain" style="justify-content:center;font-size:24px;margin-top:6px">${I("coin",28)} ${S.coins} เหรียญ · ถูก ${S.res.filter(Boolean).length}/5 ข้อ</div>
+ <ul class="rec">${Q.map(q=>`<li>${I(q.ic,24)}<span>${q.tk}</span></li>`).join("")}</ul>
+ <button class="btn" id="again">เล่นอีกรอบ</button></div>`);
+ $("#again").onclick=intro;
+ for(let i=0;i<36;i++){const c=document.createElement("div");c.className="conf";c.style.background=["#d4a64a","#a62b2b","#1c7a5c","#f4e4bc"][i%4];c.style.left=Math.random()*100+"vw";c.style.animationDuration=2+Math.random()*3+"s";c.style.animationDelay=Math.random()*1.2+"s";document.body.append(c);setTimeout(()=>c.remove(),6000)}
+}
+/* คีย์ลัด: 1-3 ตอบ, Enter/Space ไปต่อ */
+document.addEventListener("keydown",e=>{
+ if(["1","2","3"].includes(e.key)&&!S.locked&&!$("#ov").classList.contains("hidden")&&document.querySelector(".opt"))answer(+e.key-1);
+});
+setMute();intro();
+</script>
+</body>
+</html>
